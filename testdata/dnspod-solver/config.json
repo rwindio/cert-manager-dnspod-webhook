@@ -1,0 +1,11 @@
+{
+    "regionId": "cn-beijing",
+    "secretIdSecretRef": {
+        "name": "dnspod-secret",
+        "key": "secret-id"
+    },
+    "secretKeySecretRef": {
+        "name": "dnspod-secret",
+        "key": "secret-key"
+    }
+}
