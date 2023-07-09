@@ -1,6 +1,6 @@
 apiVersion: v2
 name: dnspod-webhook
-version: 0.1.6
+version: 0.1.7
 description: Cert Manager Webhook for dnspod.
 type: application
 home: https://github.com/reodwind/cert-manager-dnspod-webhook
