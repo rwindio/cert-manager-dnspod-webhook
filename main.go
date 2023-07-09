@@ -111,6 +111,7 @@ func (c *dnsPodProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	}
 	c.dnspodClient = podclient
 	podMode := convertDnsPod(ch.ResolvedZone, ch.ResolvedFQDN)
+	klog.Infof("[%s]转换后的域名:[%s]子域名[%s]", ch.ResolvedFQDN, podMode.Domain, podMode.Subdomain)
 	_, zoneName, err := c.getHostedZone(podMode.Domain)
 	if err != nil {
 		return fmt.Errorf("failed to get dnspod hosted zone: %v error:%v", zoneName, err)
@@ -132,6 +133,7 @@ func (c *dnsPodProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 func (c *dnsPodProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	klog.InfoS("Presenting challenge", "dnsName", ch.DNSName, "resolvedZone", ch.ResolvedZone, "resolvedFQDN", ch.ResolvedFQDN)
 	podMode := convertDnsPod(ch.ResolvedZone, ch.ResolvedFQDN)
+	klog.Infof("[%s]转换后的域名:[%s]子域名[%s]", ch.ResolvedFQDN, podMode.Domain, podMode.Subdomain)
 	_, zoneName, err := c.getHostedZone(podMode.Domain)
 	if err != nil {
 		return fmt.Errorf("failed to get dnspod hosted zone: %v error:%v", zoneName, err)
@@ -287,7 +289,7 @@ func (c *dnsPodProviderSolver) newTxtRecord(zone, fqdn, value string) *dnspod.Cr
 // convertDnsPod convert
 func convertDnsPod(zone, fqdn string) dnspodReq {
 	request := dnspodReq{}
-	request.Subdomain = fqdn[:len(fqdn)-len(zone)-2]
+	request.Subdomain = util.UnFqdn(fqdn[:len(fqdn)-len(zone)])
 	request.Domain = util.UnFqdn(zone)
 	return request
 }
