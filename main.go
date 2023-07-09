@@ -60,7 +60,7 @@ type dnsPodProviderSolver struct {
 type dnspodReq struct {
 	Domain    string //域名
 	Subdomain string //子域名
-	RecordId  string //记录ID
+	//RecordId  string //记录ID
 }
 
 // customDNSProviderConfig is a structure that is used to decode into when
@@ -150,7 +150,6 @@ func (c *dnsPodProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 			return nil
 		}
 		if err != nil {
-			klog.Errorf("删除记录错误:%s", err)
 			return fmt.Errorf("failed to get dnspod delete txt record: %v", err)
 		}
 	}
