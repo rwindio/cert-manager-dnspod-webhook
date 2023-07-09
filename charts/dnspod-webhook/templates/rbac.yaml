@@ -28,7 +28,7 @@ roleRef:
 subjects:
   - apiGroup: ""
     kind: ServiceAccount
-    name: {{ include "dnspod-webhook.serviceAccountName" . }}
+    name: {{ include "dnspod-webhook.fullname" . }}
     namespace: {{ .Release.Namespace }}
 ---
 # Grant cert-manager permission to validate using our apiserver
