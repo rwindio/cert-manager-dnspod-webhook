@@ -17,6 +17,8 @@ jobs:
         platform:
           - linux/amd64
           - linux/arm64
+          - linux/armv7
+          - linux/riscv64
     steps:
       -
         name: Checkout

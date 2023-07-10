@@ -139,8 +139,11 @@ func (c *dnsPodProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 		return fmt.Errorf("failed to get dnspod hosted zone: %v error:%v", zoneName, err)
 	}
 	records, err := c.findTxtRecords(podMode.Domain, podMode.Subdomain)
-	if err != nil || records.Response == nil || len(records.Response.RecordList) <= 0 {
+	if err != nil {
 		return fmt.Errorf("failed to get dnspod finding txt record: %v", err)
+	}
+	if records == nil || records.Response == nil || len(records.Response.RecordList) <= 0 {
+		return nil
 	}
 	for _, record := range records.Response.RecordList {
 		request := dnspod.NewDeleteRecordRequest()
@@ -267,7 +270,8 @@ func (c *dnsPodProviderSolver) findTxtRecords(zone, fqdn string) (*dnspod.Descri
 	request.RecordType = common.StringPtr("TXT")
 	response, err := c.dnspodClient.DescribeRecordList(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		return nil, err
+		klog.Infof("域名[%s]未查找到[%s]指定记录！", zone, fqdn)
+		return nil, nil
 	}
 	if err != nil {
 		return nil, err
