@@ -26,8 +26,8 @@ or
 kubectl create secret generic dnspod-secret --from-literal="access-token=yourtoken" --from-literal="secret-key=yoursecretkey"
 ```
 ### Create an issuer
-The name of solver to use is ```alidns-solver```. You can create an issuer as below :
-``` yam
+The name of solver to use is ```dnspod-solver```. You can create an issuer as below :
+``` yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
