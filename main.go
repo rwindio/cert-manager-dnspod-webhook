@@ -216,6 +216,7 @@ func (c *dnsPodProviderSolver) initpoddnsclient(ch *v1alpha1.ChallengeRequest) (
 		klog.Errorf("Load configuration error:%s", err)
 		return nil, err
 	}
+	klog.Infof("密匙名称:%s", cfg.SecretId.Name)
 	secretID, err := c.loadSecretData(cfg.SecretId, ch.ResourceNamespace)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get domain id %s: %v", ch.ResolvedZone, err)
