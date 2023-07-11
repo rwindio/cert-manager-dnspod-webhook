@@ -3,7 +3,13 @@
 This is a Webhook implementation used by Cert Manager in conjunction with Tencent Cloud DNS.
 
 For more detailed information about webhook, please refer to the certificate manager documentation: https://certificate manager.io/docs/concepts/webhook/
-
+#### 项目由来
+因为我多域名托管在腾讯国内和国际，结果现有项目使用Token方式接口相同可API不同。没办法自己写了一个基于腾讯SDK API 3.0
+因为多账号所以TOKEN 和KEY 不同所以自定义ClusterIssuer方式最好
+安装完后注意```groupName```与```solverName```
+默认groupName：```acme.dnspod.ca``` helm 安装时候没有更改就这默认值
+solverName：写死的```dnspod-solver```
+不同Secret信息请注意```secretIdSecretRef``` ```secretKeySecretRef``` name
 ## Usage
 ### Installation
 ``` bash
@@ -26,9 +32,9 @@ or
 kubectl create secret generic dnspod-secret --from-literal="access-token=yourtoken" --from-literal="secret-key=yoursecretkey"
 ```
 ### Create an issuer
-Please note:
-Test environment use: ```https://acme-staging-v02.api.letsencrypt.org/directory```
-Production environment use: ```https://acme-v02.api.letsencrypt.org/directory```
+Please note:  
+Test environment use: ```https://acme-staging-v02.api.letsencrypt.org/directory```  
+Production environment use: ```https://acme-v02.api.letsencrypt.org/directory```  
 The name of solver to use is ```dnspod-solver```. You can create an issuer as below :
 ``` yaml
 apiVersion: cert-manager.io/v1
