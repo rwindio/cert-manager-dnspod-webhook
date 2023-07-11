@@ -26,6 +26,9 @@ or
 kubectl create secret generic dnspod-secret --from-literal="access-token=yourtoken" --from-literal="secret-key=yoursecretkey"
 ```
 ### Create an issuer
+Please note:
+Test environment use: ```https://acme-staging-v02.api.letsencrypt.org/directory```
+Production environment use: ```https://acme-v02.api.letsencrypt.org/directory```
 The name of solver to use is ```dnspod-solver```. You can create an issuer as below :
 ``` yaml
 apiVersion: cert-manager.io/v1
