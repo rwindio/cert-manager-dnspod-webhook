@@ -7,7 +7,7 @@ IMAGE_TAG := "latest"
 
 OUT := $(shell pwd)/_out
 
-KUBE_VERSION=v1.19.2
+KUBE_VERSION=1.28.0
 
 $(shell mkdir -p "$(OUT)")
 export TEST_ASSET_ETCD=_test/kubebuilder/etcd
