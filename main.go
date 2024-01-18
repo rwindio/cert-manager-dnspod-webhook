@@ -26,6 +26,12 @@ import (
 
 var GroupName = os.Getenv("GROUP_NAME")
 
+// 禁用CHAME记录，不然影响DNS01查询结果
+var DisableCHAME = []string{
+	"@",
+	"*",
+}
+
 func main() {
 	if GroupName == "" {
 		panic("GROUP_NAME must be specified")
@@ -83,8 +89,9 @@ type dnsPodDNSProviderConfig struct {
 	// These fields will be set by users in the
 	// `issuer.spec.acme.dns01.providers.webhook.config` field.
 
-	SecretId  cmmetav1.SecretKeySelector `json:"secretIdSecretRef"`
-	SecretKey cmmetav1.SecretKeySelector `json:"secretKeySecretRef"`
+	SecretId     cmmetav1.SecretKeySelector `json:"secretIdSecretRef"`
+	SecretKey    cmmetav1.SecretKeySelector `json:"secretKeySecretRef"`
+	DisableCHAME cmmetav1.SecretKeySelector `json:"disableCHAME"`
 }
 
 // Name is used as the name for this DNS solver when referencing it on the ACME
@@ -121,6 +128,7 @@ func (c *dnsPodProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	if err != nil {
 		return fmt.Errorf("failed to get dnspod domain record: %v", err)
 	}
+	c.modifiedChameStatu(*zoneName, false) //需要禁用CHAME状态不然查询TXT会失败
 	return nil
 }
 
@@ -138,7 +146,7 @@ func (c *dnsPodProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	if err != nil {
 		return fmt.Errorf("failed to get dnspod hosted zone: %v error:%v", zoneName, err)
 	}
-	records, err := c.findTxtRecords(podMode.Domain, podMode.Subdomain)
+	records, err := c.findTxtRecords(podMode.Domain, podMode.Subdomain, "TXT")
 	if err != nil {
 		return fmt.Errorf("failed to get dnspod finding txt record: %v", err)
 	}
@@ -158,6 +166,7 @@ func (c *dnsPodProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 			return fmt.Errorf("failed to get dnspod delete txt record: %v", err)
 		}
 	}
+	c.modifiedChameStatu(*zoneName, true) //需要禁用CHAME状态不然查询TXT会失败
 	return nil
 }
 
@@ -264,11 +273,11 @@ func (c *dnsPodProviderSolver) getHostedZone(resolvedZone string) (*uint64, *str
 }
 
 // findTxtRecords Find the specified TXT record
-func (c *dnsPodProviderSolver) findTxtRecords(zone, fqdn string) (*dnspod.DescribeRecordListResponse, error) {
+func (c *dnsPodProviderSolver) findTxtRecords(zone, fqdn, recordType string) (*dnspod.DescribeRecordListResponse, error) {
 	request := dnspod.NewDescribeRecordListRequest()
 	request.Subdomain = common.StringPtr(fqdn)
 	request.Domain = common.StringPtr(zone)
-	request.RecordType = common.StringPtr("TXT")
+	request.RecordType = common.StringPtr(recordType)
 	response, err := c.dnspodClient.DescribeRecordList(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		klog.Infof("域名[%s]未查找到[%s]指定记录！", zone, fqdn)
@@ -289,6 +298,33 @@ func (c *dnsPodProviderSolver) newTxtRecord(zone, fqdn, value string) *dnspod.Cr
 	request.RecordLine = common.StringPtr("默认")
 	request.Value = common.StringPtr(value)
 	return request
+}
+
+func (c *dnsPodProviderSolver) modifiedChameStatu(zone string, state bool) error {
+	for _, name := range DisableCHAME {
+		records, err := c.findTxtRecords(zone, name, "CHAME")
+		if err != nil {
+			return err
+		}
+		if records == nil || records.Response == nil || len(records.Response.RecordList) <= 0 {
+			return nil
+		}
+		for _, record := range records.Response.RecordList {
+			modify := dnspod.NewModifyRecordRequest()
+			modify.Domain = &zone
+			modify.RecordId = record.RecordId
+			if state {
+				modify.Status = common.StringPtr("ENABLE")
+			} else {
+				modify.Status = common.StringPtr("DISABLE")
+			}
+			_, err = c.dnspodClient.ModifyRecord(modify)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // convertDnsPod convert
