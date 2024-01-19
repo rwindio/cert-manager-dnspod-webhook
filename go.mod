@@ -1,4 +1,4 @@
-module github.com/rwind-rep/cert-manager-dnspod-webhook
+module github.com/reodwind/cert-manager-dnspod-webhook
 
 go 1.20
 
