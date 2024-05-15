@@ -2,5 +2,5 @@ remote: origin
 target-branch: main
 chart-dirs:
   - chart
-helm-extra-set-args: --set image.tag=v1.13.4
+helm-extra-set-args: --set image.tag=v1.13.5
 validate-maintainers: false
