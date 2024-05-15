@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   dnspod-webhook:
   - apiVersion: v2
+    appVersion: v1.13.4
+    created: "2024-05-15T16:01:37.23927219Z"
+    description: Cert Manager Webhook for dnspod.
+    digest: 84aa93c3699f5787d11abd571ecc0de41f1e81f5ea09b9ad3e89ef6a42c0e54c
+    home: https://github.com/reodwind/cert-manager-dnspod-webhook
+    name: dnspod-webhook
+    type: application
+    urls:
+    - https://github.com/reodwind/cert-manager-dnspod-webhook/releases/download/dnspod-webhook-v1.13.4/dnspod-webhook-v1.13.4.tgz
+    version: v1.13.4
+  - apiVersion: v2
     appVersion: v1.13.3
     created: "2024-01-19T06:11:20.481004629Z"
     description: Cert Manager Webhook for dnspod.
@@ -111,4 +122,4 @@ entries:
     urls:
     - https://github.com/reodwind/cert-manager-dnspod-webhook/releases/download/dnspod-webhook-0.1.2/dnspod-webhook-0.1.2.tgz
     version: 0.1.2
-generated: "2024-01-19T06:11:20.481061144Z"
+generated: "2024-05-15T16:01:37.239353441Z"
