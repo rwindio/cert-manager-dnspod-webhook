@@ -310,6 +310,7 @@ func (c *dnsPodProviderSolver) modifiedChameStatu(zone string, state bool) error
 			return nil
 		}
 		for _, record := range records.Response.RecordList {
+			klog.Info("正在修改域名[%s]中的CHAME状态防止查找不到[%s][%v]", zone, name, state)
 			modify := dnspod.NewModifyRecordRequest()
 			modify.Domain = &zone
 			modify.RecordId = record.RecordId
