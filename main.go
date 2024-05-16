@@ -275,15 +275,14 @@ func (c *dnsPodProviderSolver) getHostedZone(resolvedZone string) (*uint64, *str
 // findTxtRecords Find the specified TXT record
 func (c *dnsPodProviderSolver) findTxtRecords(zone, fqdn, recordType string) (*dnspod.DescribeRecordListResponse, error) {
 	request := dnspod.NewDescribeRecordListRequest()
-	request.Subdomain = common.StringPtr(fqdn)
+	if len(fqdn) > 0 {
+		request.Subdomain = common.StringPtr(fqdn)
+	}
 	request.Domain = common.StringPtr(zone)
 	request.RecordType = common.StringPtr(recordType)
 	response, err := c.dnspodClient.DescribeRecordList(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
-		klog.Infof("域名[%s]未查找到[%s]指定记录！", zone, fqdn)
-		return nil, nil
-	}
-	if err != nil {
+		klog.Infof("域名[%s]未查找到[%s]指定记录！错误记录：%s", zone, fqdn, err.Error())
 		return nil, err
 	}
 	return response, nil
@@ -301,27 +300,26 @@ func (c *dnsPodProviderSolver) newTxtRecord(zone, fqdn, value string) *dnspod.Cr
 }
 
 func (c *dnsPodProviderSolver) modifiedChameStatu(zone string, state bool) error {
-	for _, name := range DisableCHAME {
-		records, err := c.findTxtRecords(zone, name, "CHAME")
-		if err != nil {
-			return err
-		}
-		if records == nil || records.Response == nil || len(records.Response.RecordList) <= 0 {
-			return nil
-		}
-		for _, record := range records.Response.RecordList {
-			klog.Info("正在修改域名[%s]中的CHAME状态防止查找不到[%s][%v]", zone, name, state)
-			modify := dnspod.NewModifyRecordRequest()
-			modify.Domain = &zone
-			modify.RecordId = record.RecordId
-			if state {
-				modify.Status = common.StringPtr("ENABLE")
-			} else {
-				modify.Status = common.StringPtr("DISABLE")
-			}
-			_, err = c.dnspodClient.ModifyRecord(modify)
-			if err != nil {
-				return err
+	records, err := c.findTxtRecords(zone, "", "CHAME")
+	if err != nil {
+		return err
+	}
+	if records == nil || records.Response == nil || len(records.Response.RecordList) <= 0 {
+		return fmt.Errorf("record is nill")
+	}
+	for _, record := range records.Response.RecordList {
+		for _, disableName := range DisableCHAME {
+			if *record.Name == disableName {
+				modify := dnspod.NewModifyRecordRequest()
+				modify.Domain = &zone
+				modify.RecordId = record.RecordId
+				if !state {
+					modify.Status = common.StringPtr("DISABLE")
+				}
+				_, err = c.dnspodClient.ModifyRecord(modify)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
